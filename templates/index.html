@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小车控制</title>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #f4f4f4;
+            font-family: Arial, sans-serif;
+        }
+        #control-area {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background-color: #ddd;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        #control-point {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 50px;
+            height: 50px;
+            background-color: #4CAF50;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.1s;
+            transform: translate(-50%, -50%);
+        }
+        .direction-zone {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            clip-path: polygon(50% 50%, 100% 0, 100% 100%);
+            opacity: 0.5;
+        }
+        .up-zone {
+            background-color: rgba(76, 175, 80, 0.5); /* 绿色 */
+            transform: rotate(0deg);
+        }
+        .down-zone {
+            background-color: rgba(244, 67, 54, 0.5); /* 红色 */
+            transform: rotate(180deg);
+        }
+        .left-zone {
+            background-color: rgba(33, 150, 243, 0.5); /* 蓝色 */
+            transform: rotate(270deg);
+        }
+        .right-zone {
+            background-color: rgba(255, 193, 7, 0.5); /* 黄色 */
+            transform: rotate(90deg);
+        }
+        #direction-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            pointer-events: none; /* 不阻止鼠标事件 */
+        }
+        
+        /* 添加数据显示区域的样式 */
+        #data-display {
+            width: 300px;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+        #data-display h3 {
+            margin-top: 0;
+            color: #333;
+            text-align: center;
+        }
+        .data-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+        }
+        .data-label {
+            font-weight: bold;
+        }
+        
+        /* 添加视频显示区域的样式 */
+        #video-display {
+            width: 640px;
+            height: 480px;
+            background-color: #000;
+            margin: 20px 0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        #video-frame {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body>
+    <!-- 添加视频显示区域 -->
+    <div id="video-display">
+        <img id="video-frame" src="" alt="视频流">
+    </div>
+    
+    <div id="control-area">
+        <div class="direction-zone up-zone"></div>
+        <div class="direction-zone down-zone"></div>
+        <div class="direction-zone left-zone"></div>
+        <div class="direction-zone right-zone"></div>
+        <div id="control-point"></div>
+        <div id="direction-label">控制方向</div>
+    </div>
+    
+    <!-- 添加数据显示区域 -->
+    <div id="data-display">
+        <h3>移动数据</h3>
+        <div class="data-item">
+            <span class="data-label">方向:</span>
+            <span id="move-direction">-</span>
+        </div>
+        <div class="data-item">
+            <span class="data-label">速度:</span>
+            <span id="move-speed">-</span>
+        </div>
+        <!-- 添加控制开关按钮 -->
+        <div class="data-item" style="margin-top: 15px; justify-content: center;">
+            <button id="toggle-control-btn" style="padding: 8px 15px; background-color: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                启用控制
+            </button>
+        </div>
+        <div class="data-item" style="justify-content: center;">
+            <span id="control-status" style="font-weight: bold; color: #f44336;">控制已禁用</span>
+        </div>
+    </div>
+    
+    <script>
+        const controlPoint = document.getElementById('control-point');
+        const controlArea = document.getElementById('control-area');
+        const directionLabel = document.getElementById('direction-label');
+        const videoFrame = document.getElementById('video-frame');
+        const moveDirectionElement = document.getElementById('move-direction');
+        const moveSpeedElement = document.getElementById('move-speed');
+        const toggleControlBtn = document.getElementById('toggle-control-btn');
+        const controlStatusElement = document.getElementById('control-status');
+        const radius = controlArea.offsetWidth / 2 - controlPoint.offsetWidth / 2;
+        const socket = io(); // 连接到后端 Socket.IO 服务器
+        let activeDirection = null;
+        let controlEnabled = false; // 控制是否启用
+
+        // 控制开关按钮点击事件
+        toggleControlBtn.addEventListener('click', function() {
+            socket.emit('toggle_control');
+        });
+
+        // 接收后端发送的响应
+        socket.on('response', function(data) {
+            if (data.status.includes('enabled')) {
+                controlEnabled = true;
+                toggleControlBtn.style.backgroundColor = '#4CAF50';
+                toggleControlBtn.textContent = '禁用控制';
+                controlStatusElement.style.color = '#4CAF50';
+                controlStatusElement.textContent = '控制已启用';
+            } else if (data.status.includes('disabled')) {
+                controlEnabled = false;
+                toggleControlBtn.style.backgroundColor = '#f44336';
+                toggleControlBtn.textContent = '启用控制';
+                controlStatusElement.style.color = '#f44336';
+                controlStatusElement.textContent = '控制已禁用';
+            }
+        });
+
+        // 接收后端发送的视频帧
+        socket.on('video_frame_update', function(data) {
+            if (data.frame) {
+                videoFrame.src = 'data:image/jpeg;base64,' + data.frame;
+            }
+        });
+
+        // 接收后端发送的移动数据
+        socket.on('move_data_update', function(data) {
+            const moveData = data.move_data;
+            if (moveData) {
+                // 根据 MoveData 类的结构显示数据
+                // 假设 MoveData 有 direction 和 speed 属性
+                moveDirectionElement.textContent = moveData.direction || '-';
+                moveSpeedElement.textContent = moveData.speed || '-';
+            }
+        });
+
+        // 鼠标事件
+        controlPoint.addEventListener('mousedown', dragStart);
+        window.addEventListener('mouseup', dragEnd);
+        window.addEventListener('mouseleave', dragEnd);
+
+        // 触摸事件
+        controlPoint.addEventListener('touchstart', dragStart);
+        window.addEventListener('touchend', dragEnd);
+        window.addEventListener('touchcancel', dragEnd);
+
+        function dragStart(e) {
+            e.preventDefault(); // 防止默认行为
+            const rect = controlArea.getBoundingClientRect();
+            const offsetX = rect.left + radius;
+            const offsetY = rect.top + radius;
+
+            const moveHandler = (e) => {
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                const x = clientX - offsetX;
+                const y = clientY - offsetY;
+                const angle = Math.atan2(y, x) * (180 / Math.PI);
+                const distance = Math.min(Math.sqrt(x * x + y * y), radius); // 计算距离
+
+                // 更新摇杆位置
+                controlPoint.style.transform = `translate(-50%, -50%) translate(${distance * Math.cos(angle * Math.PI / 180)}px, ${distance * Math.sin(angle * Math.PI / 180)}px)`;
+
+// 确定方向
+if (distance > 0) { // 取消死区限制
+    if (angle >= -45 && angle < 45) {
+        activeDirection = 'right';
+    } else if (angle >= 45 && angle < 135) {
+        activeDirection = 'down';
+    } else if (angle >= 135 || angle < -135) {
+        activeDirection = 'left';
+    } else if (angle >= -135 && angle < -45) {
+        activeDirection = 'up';
+    }
+} else {
+    activeDirection = null; // 在中心位置不改变方向
+}
+
+directionLabel.textContent = activeDirection ? `方向: ${activeDirection}` : '控制方向';
+socket.emit('control', { direction: activeDirection }); // 发送控制指令到后端
+};
+
+window.addEventListener('mousemove', moveHandler);
+window.addEventListener('touchmove', moveHandler);
+}
+
+function dragEnd() {
+controlPoint.style.transform = 'translate(-50%, -50%)'; // 重置摇杆位置
+activeDirection = null;
+directionLabel.textContent = '控制方向';
+socket.emit('stop'); // 停止控制
+window.removeEventListener('mousemove', dragEnd);
+window.removeEventListener('touchmove', dragEnd);
+}
+</script>
+</body>
+</html>
