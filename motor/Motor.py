@@ -23,8 +23,10 @@ class MotorBase(Protocol):
 class PCA9685Motor(traitlets.HasTraits):
     def __init__(self, d1, d2, d3, d4):
         super().__init__()
+        self.interval = 0.05
+        self.last_time = time.time()
         # 设置 PCA9685 I2C 地址
-        self.PCA9685_ADDRESS = 0x40#0x60
+        self.PCA9685_ADDRESS = 0x60#0x60
 
         # 寄存器地址
         self.MODE1 = 0x00
@@ -44,7 +46,7 @@ class PCA9685Motor(traitlets.HasTraits):
 
         self.traffic_light_release()
     def write(self, reg, value):
-        self.bus.write_byte_data(self.address, reg, value)
+        self.bus.write_byte_data(self.PCA9685_ADDRESS, reg, value)
 
     Car_run = traitlets.Integer(default_value=0)
 
@@ -58,7 +60,7 @@ class PCA9685Motor(traitlets.HasTraits):
         }
 
         speed_pwm=int(data.speed*2048/100)
-        set_pwm(speed_pwm,speed_pwm,speed_pwm,speed_pwm)
+        self.set_pwm(speed_pwm,speed_pwm,speed_pwm,speed_pwm)
 
         if data.direction == 0:
             actions[data.direction]()
@@ -501,4 +503,4 @@ if __name__ == "__main__":
     # 使用 Modbus 驱动
     # car_controller:MotorBase = ModbusMotor(port="COM1")
     # car_controller.Control(1,100)
-    #send_modbus_command("05 44 23 18 33 18 FF 64 FF 64 AD 09")
+    send_modbus_command("05 44 23 18 33 18 FF 64 FF 64 AD 09")

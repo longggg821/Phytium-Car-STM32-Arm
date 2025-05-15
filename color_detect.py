@@ -4,12 +4,17 @@ import numpy as np
 import pyarrow as pa
 import sys
 import os
+import serial
+import time
 
 # 添加项目根目录到 Python 路径
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # 现在可以正常导入
 from untils.untils import Calculate
+
+from motor.Motor import PCA9685Motor
+
 
 
 def process_image(data, metadata):
@@ -162,7 +167,8 @@ class ColorDetector:
                     (255, 255, 255),
                     2,
                 )
-                data.append(Calculate(center_x, center_y, self.ratio(h, w)))
+                # data.append(Calculate(center_x, center_y, self.ratio(h, w)))
+                data.append([x,y,w,h])
         return processed_frame, ma, data
 
 
@@ -188,16 +194,87 @@ class ColorDetector:
 ##        # elif  event["type"] == "STOP":
 ##        #     cv2.VideoCapture.release()
 
+cap=None
+motors=None
+ser=None
+
+CMD_DIR={
+    'find':'',
+    'advance':'',
+    'back':'',
+    'turn left':'',
+    'turn right':'',
+}
+def execute_cmd(cmd):
+    global motors
+    MOVE_SPEED=2500
+    TURN_SPEED=1500
+    if cmd=='turn_right':
+        motors.Rotate_Right()
+        motors.set_pwm(TURN_SPEED,TURN_SPEED,TURN_SPEED,TURN_SPEED)
+    elif cmd=='turn_left':
+        motors.Rotate_Left()
+        motors.set_pwm(TURN_SPEED,TURN_SPEED,TURN_SPEED,TURN_SPEED)
+    elif cmd=='advance':
+        motors.Advance()
+        motors.set_pwm(MOVE_SPEED,MOVE_SPEED,MOVE_SPEED,MOVE_SPEED)
+    elif cmd=='back':
+        motors.Back()
+        motors.set_pwm(MOVE_SPEED,MOVE_SPEED,MOVE_SPEED,MOVE_SPEED)
+    elif cmd=='stop':
+        motors.Stop()
+    elif cmd=='catch':
+        global ser
+        global cap
+        motors.Stop()
+        cap.release()
+        ser.write(b'@u \n')
+        time.sleep(6)
+        ser.write(b'@d \n')
+        time.sleep(8)
+        cap = cv2.VideoCapture(0)
+        
+    
 
 def test():
-    dector = ColorDetector([30, 70, 80], [50, 255, 255], min_area=300)
+    IMGW=640  #摄像头捕获图片长度
+    IMGH=480  #摄像头捕获图片高度
+    WIDTH_THRESHOLD=150    #标记区域的长度临界值，达到这个长度表示距离已经到达标记附近
+    EDGE_THRESHOLD=(IMGW-WIDTH_THRESHOLD)/2   #标记区域左右边界临界值，用于判断标记区域偏左还是偏右
+    EDGE_DEVIATION=40   #左右边界差距的误差范围，差距小于这个值就认为是在中间
+    WIDTH_DEVIATION=10  #长度的误差范围，标记长度处在长度临界值加减误差的范围内，就认为是到达了捡球合适位置
+    
+    BALL_COUNT_TIMES=100
+    BALL_COUNT_THRESHOLD=70
+
+    dector = ColorDetector([30, 70, 80], [50, 255, 255], min_area=300,max_area=40000)
 
     # 打开默认摄像头（通常是设备上的第一个摄像头）
+    global cap
     cap = cv2.VideoCapture(0)
     # 图片形状 640*480
     if not cap.isOpened():
         print("无法打开摄像头")
         exit()
+    
+    global motors
+    motors = PCA9685Motor(1500,1500,1500,1500)
+    global ser
+    ser=serial.Serial('/dev/ttyAMA2',9600)
+    
+    ball_count=0
+    times_count=0
+    
+    find_status=0 # 0:not find, 1:turn and find, 2:stop turn and find
+    NOT_FIND=0
+    TURN_FIND=1
+    STOP_TURN_FIND=2
+    
+    TURN_FIND_TIME_THRESHOLD = 60*1
+    STOP_TURN_FIND_TIME_THRESHOLD = 60*5
+    
+    last_time=int(time.time()) # second
+    now_time =int(time.time())
 
     while True:
         # 逐帧捕获
@@ -210,14 +287,69 @@ def test():
             break
 
         # 显示当前帧
-        cv2.imshow("Camera Feed", frame)
-        cv2.imshow("processed_frame", processed_frame)
-        cv2.imshow("mask", mask)
+        # cv2.imshow("Camera Feed", frame)
+        # cv2.imshow("processed_frame", processed_frame)
+        # cv2.imshow("mask", mask)
+        
+        cmd=None
+        
+        if len(data)<=0:
+            # motors.Stop()
+            cmd='turn_left'
+            if find_status==NOT_FIND:
+                find_status=TURN_FIND
+            elif find_status==TURN_FIND:
+                now_time=int(time.time())
+                if now_time-last_time>=TURN_FIND_TIME_THRESHOLD:
+                    find_status=STOP_TURN_FIND
+                    cmd='stop'
+            elif find_status==STOP_TURN_FIND:
+                now_time=int(time.time())
+                if now_time-last_time>=STOP_TURN_FIND_TIME_THRESHOLD:
+                    find_status=TURN_FIND
+                
+
+        for xywh in data[:1]:
+            find_status=NOT_FIND
+            #图片从左上角开始为0，0，横向为x，纵向为y
+            
+            leftEdge=int(xywh[0])
+            rightEdge=IMGW-int(xywh[2])-int(xywh[0])
+            width=int(xywh[2])
+
+            difference=leftEdge-rightEdge
+            print('dif: ',difference)
+            print('wid: ',width)
+            
+            if difference<-1*EDGE_DEVIATION:#右边距距离更小，应右转
+                cmd='turn_right'# "右转"
+            elif difference>EDGE_DEVIATION:#左边距距离更小，应左转
+                cmd='turn_left' # "左转"
+            elif width<WIDTH_THRESHOLD-WIDTH_DEVIATION:#长度较小，说明离标记较远，应前进
+                cmd='advance'   # "前进"
+            elif width>WIDTH_THRESHOLD+WIDTH_DEVIATION:#长度较大，说明离标记较近，应后退
+                cmd='back'      # "后退"
+            else:#所有距离都符合，表示来到了标记合适位置，可以抓取
+                cmd='stop'
+                ball_count+=1
+                if times_count==0:
+                    times_count=1
+        
+        if times_count>0:
+            times_count+=1
+            if times_count>=BALL_COUNT_TIMES:
+                if ball_count>=BALL_COUNT_THRESHOLD:
+                    cmd='catch'# '抓取'
+                ball_count=0
+                times_count=0
+        print(cmd)
+        execute_cmd(cmd)
 
         # 按下键盘上的 'q' 键退出循环
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
-
+    motors.Stop()
+    ser.close()
     # 释放摄像头资源
     cap.release()
     # 关闭所有 OpenCV 窗口
