@@ -246,8 +246,8 @@ def test():
     
     BALL_COUNT_TIMES=100
     BALL_COUNT_THRESHOLD=70
-
-    dector = ColorDetector([30, 70, 80], [50, 255, 255], min_area=300,max_area=40000)
+    # don't touch [30, 70, 80], [50, 255, 255]
+    dector = ColorDetector([30, 20, 80], [50, 255, 255], min_area=300,max_area=40000)
 
     # 打开默认摄像头（通常是设备上的第一个摄像头）
     global cap
@@ -287,9 +287,13 @@ def test():
             break
 
         # 显示当前帧
+        n=str(int(time.time()))
+        cv2.imwrite('./frame/'+n+'.jpg',frame)
+        cv2.imwrite('./mask/'+n+'.jpg',mask)
+        cv2.imwrite('./process/'+n+'.jpg',processed_frame)
         # cv2.imshow("Camera Feed", frame)
-        # cv2.imshow("processed_frame", processed_frame)
-        # cv2.imshow("mask", mask)
+        #cv2.imshow("processed_frame", processed_frame)
+        #cv2.imshow("mask", mask)
         
         cmd=None
         
