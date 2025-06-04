@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "\\?\D:\Project\Catch_Robot\Phytium-Car-STM32-Arm\motor\main.py", line 6, in <module>
+    from Motor import MotorBase, ModbusMotor
+  File "\\?\D:\Project\Catch_Robot\Phytium-Car-STM32-Arm\motor\Motor.py", line 5, in <module>
+    import smbus
+ModuleNotFoundError: No module named 'smbus'

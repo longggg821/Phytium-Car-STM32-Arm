@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "\\?\D:\Project\Catch_Robot\Phytium-Car-STM32-Arm\car_cv.py", line 3, in <module>
+    from traitlets import List
+ModuleNotFoundError: No module named 'traitlets'

@@ -3,9 +3,15 @@ from typing import List
 
 
 class MoveData:
+    direction_stop = 0
+    direction_advance = 1
+    direction_back = 2
+    direction_turn_left = 5
+    direction_turn_right = 6
+
     def __init__(self, direction: int, speed: int):
         self.direction = direction
-        self.speed = speed
+        self.speed = speed # 最大200
 
     @classmethod
     def from_arrow_array(cls, array: pa.Array) -> "MoveData":

@@ -1,0 +1,52 @@
+2025-05-28T03:37:43.382404Z  INFO dora_daemon::coordinator: Connected to dora-coordinator at 127.0.0.1:53290
+2025-05-28T03:37:43.395935Z  INFO zenoh::net::runtime: Using ZID: c0e6910b40dec133d9b81f71deafde44
+2025-05-28T03:37:43.402488Z  INFO zenoh::net::runtime::orchestrator: Zenoh can be reached at: tcp/[fe80::11d8:c19:52ea:1ad4]:5456
+2025-05-28T03:37:43.402529Z  INFO zenoh::net::runtime::orchestrator: Zenoh can be reached at: tcp/[fe80::6fa0:816c:baff:8ad2]:5456
+2025-05-28T03:37:43.402536Z  INFO zenoh::net::runtime::orchestrator: Zenoh can be reached at: tcp/[fe80::ec24:e6c7:d1:c461]:5456
+2025-05-28T03:37:43.402542Z  INFO zenoh::net::runtime::orchestrator: Zenoh can be reached at: tcp/[fe80::3cbf:f203:22a4:206]:5456
+2025-05-28T03:37:43.402785Z  INFO zenoh::net::runtime::orchestrator: Zenoh can be reached at: tcp/[fe80::59df:9846:2571:9b06]:5456
+2025-05-28T03:37:43.402793Z  INFO zenoh::net::runtime::orchestrator: Zenoh can be reached at: tcp/[fe80::2805:1a9b:2fb5:5c72]:5456
+2025-05-28T03:37:43.402796Z  INFO zenoh::net::runtime::orchestrator: Zenoh can be reached at: tcp/172.16.203.144:5456
+2025-05-28T03:37:43.403119Z  INFO zenoh::net::runtime::orchestrator: zenohd listening scout messages on 224.0.0.224:7446
+2025-05-28T03:37:43.918815Z  WARN zenoh::net::runtime::orchestrator: Scouting delay elapsed before start conditions are met.
+2025-05-28T03:37:51.933155Z  INFO dora_daemon::node_communication: channel disconnected before register message
+2025-05-28T03:37:51.933257Z  INFO dora_daemon::node_communication: channel disconnected before register message
+2025-05-28T03:38:26.061945Z  INFO run_inner{self.daemon_id=DaemonId { machine_id: None, uuid: 0b2198b2-2158-4da8-afde-ec6707fd4ffa }}: dora_daemon: received destroy command -> exiting
+2025-05-28T03:38:26.062215Z  INFO run_inner{self.daemon_id=DaemonId { machine_id: None, uuid: 0b2198b2-2158-4da8-afde-ec6707fd4ffa }}: zenoh::api::session: close session zid=c0e6910b40dec133d9b81f71deafde44
+2025-05-28T03:50:26.194569Z  INFO dora_daemon::coordinator: Connected to dora-coordinator at 127.0.0.1:53290
+2025-05-28T03:50:26.195562Z  INFO zenoh::net::runtime: Using ZID: ab85f53c364adc7f7f6fe30637fa5d39
+2025-05-28T03:50:26.203238Z  INFO zenoh::net::runtime::orchestrator: Zenoh can be reached at: tcp/[fe80::11d8:c19:52ea:1ad4]:5456
+2025-05-28T03:50:26.203261Z  INFO zenoh::net::runtime::orchestrator: Zenoh can be reached at: tcp/[fe80::6fa0:816c:baff:8ad2]:5456
+2025-05-28T03:50:26.203264Z  INFO zenoh::net::runtime::orchestrator: Zenoh can be reached at: tcp/[fe80::ec24:e6c7:d1:c461]:5456
+2025-05-28T03:50:26.203266Z  INFO zenoh::net::runtime::orchestrator: Zenoh can be reached at: tcp/[fe80::3cbf:f203:22a4:206]:5456
+2025-05-28T03:50:26.203269Z  INFO zenoh::net::runtime::orchestrator: Zenoh can be reached at: tcp/[fe80::59df:9846:2571:9b06]:5456
+2025-05-28T03:50:26.203271Z  INFO zenoh::net::runtime::orchestrator: Zenoh can be reached at: tcp/[fe80::2805:1a9b:2fb5:5c72]:5456
+2025-05-28T03:50:26.203273Z  INFO zenoh::net::runtime::orchestrator: Zenoh can be reached at: tcp/172.16.203.144:5456
+2025-05-28T03:50:26.203430Z  INFO zenoh::net::runtime::orchestrator: zenohd listening scout messages on 224.0.0.224:7446
+2025-05-28T03:50:26.707829Z  WARN zenoh::net::runtime::orchestrator: Scouting delay elapsed before start conditions are met.
+2025-05-28T03:50:30.033304Z  INFO dora_daemon::node_communication: channel disconnected before register message
+2025-05-28T03:50:30.033310Z  INFO dora_daemon::node_communication: channel disconnected before register message
+2025-05-28T04:03:16.816535Z  INFO dora_daemon::node_communication: channel disconnected before register message
+2025-05-28T04:03:16.816535Z  INFO dora_daemon::node_communication: channel disconnected before register message
+2025-05-28T04:06:47.635598Z  INFO dora_daemon::node_communication: channel disconnected before register message
+2025-05-28T04:06:47.635778Z  INFO dora_daemon::node_communication: channel disconnected before register message
+2025-05-28T04:07:26.136714Z  INFO dora_daemon::node_communication: channel disconnected before register message
+2025-05-28T04:07:26.136993Z  INFO dora_daemon::node_communication: channel disconnected before register message
+2025-05-28T04:07:55.378336Z  INFO run_inner{self.daemon_id=DaemonId { machine_id: None, uuid: 1e614e54-a00c-42a8-a3b8-14cf6e2a87b0 }}: dora_daemon: received ctrlc signal -> stopping all dataflows
+2025-05-28T04:07:55.378694Z  INFO run_inner{self.daemon_id=DaemonId { machine_id: None, uuid: 1e614e54-a00c-42a8-a3b8-14cf6e2a87b0 }}: dora_daemon: received destroy command -> exiting
+2025-05-28T04:07:55.378996Z  INFO run_inner{self.daemon_id=DaemonId { machine_id: None, uuid: 1e614e54-a00c-42a8-a3b8-14cf6e2a87b0 }}: zenoh::api::session: close session zid=ab85f53c364adc7f7f6fe30637fa5d39
+2025-05-28T04:07:55.549893Z  WARN dora_daemon: process 3516 was killed on drop because it was still running
+2025-05-28T04:07:55.682725Z  WARN dora_daemon: process 15392 was killed on drop because it was still running
+2025-05-28T07:25:59.850793Z  INFO dora_daemon::coordinator: Connected to dora-coordinator at 127.0.0.1:53290
+2025-05-28T07:25:59.852537Z  INFO zenoh::net::runtime: Using ZID: 3b93599e23281dd1805464fd88330a43
+2025-05-28T07:25:59.859700Z  INFO zenoh::net::runtime::orchestrator: Zenoh can be reached at: tcp/[fe80::11d8:c19:52ea:1ad4]:5456
+2025-05-28T07:25:59.859731Z  INFO zenoh::net::runtime::orchestrator: Zenoh can be reached at: tcp/[fe80::6fa0:816c:baff:8ad2]:5456
+2025-05-28T07:25:59.859733Z  INFO zenoh::net::runtime::orchestrator: Zenoh can be reached at: tcp/[fe80::ec24:e6c7:d1:c461]:5456
+2025-05-28T07:25:59.859735Z  INFO zenoh::net::runtime::orchestrator: Zenoh can be reached at: tcp/[fe80::3cbf:f203:22a4:206]:5456
+2025-05-28T07:25:59.859737Z  INFO zenoh::net::runtime::orchestrator: Zenoh can be reached at: tcp/[fe80::59df:9846:2571:9b06]:5456
+2025-05-28T07:25:59.859739Z  INFO zenoh::net::runtime::orchestrator: Zenoh can be reached at: tcp/[fe80::2805:1a9b:2fb5:5c72]:5456
+2025-05-28T07:25:59.859741Z  INFO zenoh::net::runtime::orchestrator: Zenoh can be reached at: tcp/172.16.203.144:5456
+2025-05-28T07:25:59.859897Z  INFO zenoh::net::runtime::orchestrator: zenohd listening scout messages on 224.0.0.224:7446
+2025-05-28T07:26:00.368701Z  WARN zenoh::net::runtime::orchestrator: Scouting delay elapsed before start conditions are met.
+2025-05-28T08:47:22.281860Z  INFO run_inner{self.daemon_id=DaemonId { machine_id: None, uuid: 4c049ae7-966c-41b8-a8f1-bb65f8d5b3b2 }}: dora_daemon: received destroy command -> exiting
+2025-05-28T08:47:22.282162Z  INFO run_inner{self.daemon_id=DaemonId { machine_id: None, uuid: 4c049ae7-966c-41b8-a8f1-bb65f8d5b3b2 }}: zenoh::api::session: close session zid=3b93599e23281dd1805464fd88330a43

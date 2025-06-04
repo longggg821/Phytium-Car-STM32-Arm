@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "\\?\D:\Project\Catch_Robot\Phytium-Car-STM32-Arm\opencv_cap.py", line 35, in <module>
+    main()
+  File "\\?\D:\Project\Catch_Robot\Phytium-Car-STM32-Arm\opencv_cap.py", line 10, in main
+    node = Node()
+RuntimeError: Could not initiate node from environment variable. For dynamic node, please add a node id in the initialization function.
+
+Caused by:
+   0: failed to init event stream
+   1: subscribe failed: Node car_cv exited before initializing dora. For more information, run `dora logs 01971512-d693-7a01-8728-039dfd8ee1f6 car_cv`.
+
+Location:
+    apis\rust\node\src\event_stream\mod.rs:139:17

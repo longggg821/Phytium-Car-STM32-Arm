@@ -233,13 +233,13 @@
 // 确定方向
 if (distance > 0) { // 取消死区限制
     if (angle >= -45 && angle < 45) {
-        activeDirection = 'right';
+        activeDirection = 'turn_right';
     } else if (angle >= 45 && angle < 135) {
-        activeDirection = 'down';
+        activeDirection = 'back';
     } else if (angle >= 135 || angle < -135) {
-        activeDirection = 'left';
+        activeDirection = 'turn_left';
     } else if (angle >= -135 && angle < -45) {
-        activeDirection = 'up';
+        activeDirection = 'advance';
     }
 } else {
     activeDirection = null; // 在中心位置不改变方向

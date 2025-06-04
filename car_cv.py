@@ -231,13 +231,19 @@ class CarCV:
                     self.process_image(Calculate.from_pa_array(event["value"]))
                 elif event_id == "state":
                     state = event["value"][0].as_py()
-                    match state:
-                        case "IDLE":
-                            self.arm_state_Ready = True
-                        case "MOVING":
-                            self.arm_state_Ready = False
-                        case "ESTOP":
-                            self.arm_state_Ready = False
+                    # match state: # python版本在3.10之后才可以使用match
+                    #     case "IDLE":
+                    #         self.arm_state_Ready = True
+                    #     case "MOVING":
+                    #         self.arm_state_Ready = False
+                    #     case "ESTOP":
+                    #         self.arm_state_Ready = False
+                    if state == "IDLE":
+                        self.arm_state_Ready = True
+                    elif state == "MOVING":
+                        self.arm_state_Ready = False
+                    elif state == "ESTOP":
+                        self.arm_state_Ready = False
 
 
 if __name__ == "__main__":

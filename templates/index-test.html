@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HSV阈值调节器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        
+        .image-container {
+            width: 640px;
+            height: 480px;
+            margin: 0 auto 30px;
+            border: 2px solid #ddd;
+            background-color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        
+        .image-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        .sliders-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .slider-column {
+            width: 48%;
+        }
+        
+        .slider-group {
+            margin-bottom: 25px;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .slider {
+            width: 100%;
+            height: 10px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #ddd;
+            outline: none;
+            border-radius: 5px;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #4CAF50;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #4CAF50;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        
+        .value-display {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 10px 0;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>HSV阈值调节器</h1>
+    
+    <div class="image-container">
+        <img id="displayed-image" src="https://via.placeholder.com/640x480" alt="图片显示区域">
+    </div>
+    
+    <div class="loading" id="loading-indicator">处理中，请稍候...</div>
+    
+    <div class="sliders-container">
+        <div class="slider-column">
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>Hue 最小值</span>
+                    <span class="value-display" id="h-min-value">30</span>
+                </div>
+                <input type="range" min="0" max="255" value="30" class="slider" id="h-min-slider">
+            </div>
+            
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>Saturation 最小值</span>
+                    <span class="value-display" id="s-min-value">70</span>
+                </div>
+                <input type="range" min="0" max="255" value="70" class="slider" id="s-min-slider">
+            </div>
+            
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>Value 最小值</span>
+                    <span class="value-display" id="v-min-value">80</span>
+                </div>
+                <input type="range" min="0" max="255" value="80" class="slider" id="v-min-slider">
+            </div>
+        </div>
+        
+        <div class="slider-column">
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>Hue 最大值</span>
+                    <span class="value-display" id="h-max-value">50</span>
+                </div>
+                <input type="range" min="0" max="255" value="50" class="slider" id="h-max-slider">
+            </div>
+            
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>Saturation 最大值</span>
+                    <span class="value-display" id="s-max-value">255</span>
+                </div>
+                <input type="range" min="0" max="255" value="255" class="slider" id="s-max-slider">
+            </div>
+            
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>Value 最大值</span>
+                    <span class="value-display" id="v-max-value">255</span>
+                </div>
+                <input type="range" min="0" max="255" value="255" class="slider" id="v-max-slider">
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 获取所有滑块和对应的值显示元素
+        const sliders = {
+            hMin: {
+                slider: document.getElementById('h-min-slider'),
+                display: document.getElementById('h-min-value')
+            },
+            sMin: {
+                slider: document.getElementById('s-min-slider'),
+                display: document.getElementById('s-min-value')
+            },
+            vMin: {
+                slider: document.getElementById('v-min-slider'),
+                display: document.getElementById('v-min-value')
+            },
+            hMax: {
+                slider: document.getElementById('h-max-slider'),
+                display: document.getElementById('h-max-value')
+            },
+            sMax: {
+                slider: document.getElementById('s-max-slider'),
+                display: document.getElementById('s-max-value')
+            },
+            vMax: {
+                slider: document.getElementById('v-max-slider'),
+                display: document.getElementById('v-max-value')
+            }
+        };
+        
+        // 图片元素和加载指示器
+        const image = document.getElementById('displayed-image');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        
+        // 防抖计时器
+        let debounceTimer;
+        const debounceDelay = 300; // 300毫秒防抖
+        
+        // 为每个滑块添加事件监听器
+        Object.keys(sliders).forEach(param => {
+            sliders[param].slider.addEventListener('input', function() {
+                // 更新显示的值
+                sliders[param].display.textContent = this.value;
+                
+                // 使用防抖技术减少请求频率
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(sendHSVData, debounceDelay);
+            });
+        });
+        
+        // 发送HSV数据到后端
+        function sendHSVData() {
+            // 显示加载指示器
+            loadingIndicator.style.display = 'block';
+            
+            // 收集所有滑块的值
+            const hsvData = {
+                h_min: Number(sliders.hMin.slider.value),
+                s_min: Number(sliders.sMin.slider.value),
+                v_min: Number(sliders.vMin.slider.value),
+                h_max: Number(sliders.hMax.slider.value),
+                s_max: Number(sliders.sMax.slider.value),
+                v_max: Number(sliders.vMax.slider.value)
+            };
+            console.log(hsvData);
+            
+            // 这里替换为您的后端API端点
+            const apiEndpoint = '/api/process-image';
+            
+            // 发送POST请求到后端
+            fetch(apiEndpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json;charset=utf-8',
+                },
+                body: JSON.stringify(hsvData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('网络响应不正常');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // 假设后端返回处理后的图片URL或Base64数据
+                if (data.imageUrl) {
+                    image.src = data.imageUrl;
+                } else if (data.imageData) {
+                    image.src = `data:image/jpeg;base64,${data.imageData}`;
+                }
+            })
+            .catch(error => {
+                console.error('请求出错:', error);
+                alert('处理图片时出错: ' + error.message);
+            })
+            .finally(() => {
+                // 隐藏加载指示器
+                loadingIndicator.style.display = 'none';
+            });
+        }
+        
+        // 初始化图片（可选）
+        // sendHSVData();
+    </script>
+</body>
+</html>

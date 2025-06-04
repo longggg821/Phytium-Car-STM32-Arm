@@ -1,0 +1,4 @@
+  File "\\?\D:\Project\Catch_Robot\Phytium-Car-STM32-Arm\car_cv.py", line 234
+    match state:
+          ^
+SyntaxError: invalid syntax

@@ -3,7 +3,7 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../")
 from dora import Node
-from Motor import MotorBase, ModbusMotor
+from Motor import Motor
 from common.move_data import MoveData
 
 
